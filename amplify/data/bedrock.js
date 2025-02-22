@@ -1,8 +1,62 @@
 export function request(ctx) {
+  const { ingredients = [] } = ctx.args;
+
+  // Construct the prompt with the provided ingredients
+  const prompt = `Would you suggest me a recipe idea using these ingredients: ${ingredients.join(", ")}.`;
+
+  return {
+    resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+    method: "POST",
+    params: {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        anthropic_version: "bedrock-2023-05-31",
+        max_tokens: 1000,
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          },
+        ],
+      }),
+    },
+  };
+}
+
+export function response(ctx) {
+  try {
+      // Parse the response body
+      const parsedBody = JSON.parse(ctx.result.body);
+      
+      // Claude 3 vastaus formaatti on hieman erilainen
+      const responseText = parsedBody.messages?.[0]?.content?.[0]?.text 
+          || parsedBody.content?.[0]?.text 
+          || parsedBody.completion 
+          || "No recipe generated";
+      
+      return {
+          body: responseText,
+          error: null
+      };
+  } catch (error) {
+      console.error('Error processing Bedrock response:', error);
+      return {
+          body: null,
+          error: error.message
+      };
+  }
+}
+
+
+
+
+/*export function request(ctx) {
     const { ingredients = [] } = ctx.args;
   
     // Construct the prompt with the provided ingredients
-    const prompt = `Suggest a recipe idea using these ingredients: ${ingredients.join(", ")}.`;
+    const prompt = `Would you suggest me a recipe idea using these ingredients: ${ingredients.join(", ")}.`;
   
     // Return the request configuration
     return {
@@ -40,4 +94,4 @@ export function request(ctx) {
     };
     // Return the response
     return res;
-  }
+  }*/
