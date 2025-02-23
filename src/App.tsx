@@ -42,7 +42,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };*/
+  };
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,6 +75,56 @@ function App() {
     } finally {
       setLoading(false);
     }
+};*/
+
+
+const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  setLoading(true);
+  setResult(""); // Tyhjennä aiempi tulos
+
+  try {
+      const formData = new FormData(event.currentTarget);
+      const ingredientsString = formData.get("ingredients")?.toString() || "";
+      const ingredients = ingredientsString.split(',').map(i => i.trim()).filter(i => i.length > 0);
+      
+      console.log('Sending ingredients:', ingredients);
+
+      if (ingredients.length === 0) {
+          setResult("Please enter at least one ingredient");
+          return;
+      }
+
+      const response = await amplifyClient.queries.askBedrock({
+          ingredients: ingredients
+      });
+
+      console.log('Raw response:', response);
+
+      if (response.errors) {
+          console.error('GraphQL errors:', response.errors);
+          setResult("Error: Could not generate recipe. Please try again.");
+          return;
+      }
+
+      if (!response.data) {
+          console.error('No data in response');
+          setResult("Error: No response from recipe generator");
+          return;
+      }
+
+      if (response.data.body) {
+          setResult(response.data.body);
+      } else {
+          setResult("Could not generate a recipe. Please try different ingredients.");
+      }
+
+  } catch (error) {
+      console.error('Error in recipe generation:', error);
+      setResult("An error occurred. Please try again.");
+  } finally {
+      setLoading(false);
+  }
 };
 
   return (
