@@ -136,7 +136,7 @@ const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
           <span className="highlight">Recipe AI</span>
         </h1>
         <p className="description">
-          Simply type a few ingredients using the format ingredient 1,
+          Simply type a few ingredients using the format like ingredient 1,
           ingredient 2, etc. and Recipe AI will generate an all-new recipe on
           demand...
         </p>
